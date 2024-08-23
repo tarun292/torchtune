@@ -155,6 +155,7 @@ def flamingo_decoder(
     num_kv_heads: int,
     embed_dim: int,
     max_seq_len: int,
+    max_enc_seq_len: int = 0,
     rope_base: int = 500000.0,
     intermediate_dim: Optional[int] = None,
 ) -> TransformerDecoder:
@@ -230,7 +231,7 @@ def flamingo_decoder(
                 q_norm=RMSNorm(dim=head_dim, eps=1e-05),
                 k_norm=RMSNorm(dim=head_dim, eps=1e-05),
                 pos_embeddings=None,
-                max_seq_len=max_seq_len,
+                max_seq_len=max_enc_seq_len if max_enc_seq_len > 0 else max_seq_len,
                 is_causal=False,
                 attn_dropout=0.0,
             )
@@ -244,11 +245,15 @@ def flamingo_decoder(
                 mlp_scale=TanhGate(),
             )
             fusion_layer = FusionLayer(layer=decoder_layer, fusion_layer=xattn_layer)
+            fusion_layer.state_dict_handle.remove()
+            fusion_layer.load_state_dict_handle.remove()
             layers.append(fusion_layer)
         else:
             layers.append(decoder_layer)
 
     tok_embeddings = FusionEmbedding(vocab_size, num_special_tokens, embed_dim)
+    tok_embeddings.state_dict_handle.remove()
+    tok_embeddings.load_state_dict_handle.remove()
     output_proj = nn.Linear(embed_dim, vocab_size, bias=False)
 
     return TransformerDecoder(

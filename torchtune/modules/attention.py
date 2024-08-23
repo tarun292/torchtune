@@ -212,7 +212,7 @@ class MultiHeadAttention(nn.Module):
 
         if self.kv_cache and input_pos is None:
             cache_size = self.kv_cache.size
-            input_pos = torch.arange(cache_size, cache_size + s_y, device=x.device)
+            input_pos = torch.arange(cache_size.item(), cache_size.item() + s_y, device=x.device)
 
         # q has shape [b, s_x, num_heads * head_dim]
         # k has shape [b, s_y, num_kv_heads * head_dim]
