@@ -133,7 +133,7 @@ class TiledTokenPositionalEmbedding(nn.Module):
 
             # Drop all the padding we added earlier and keep only the tiles that
             # were actually present in the image.
-            indices = torch.arange(n_tiles_h*n_tiles_w)
+            indices = torch.arange(n_tiles_h*n_tiles_w, dtype=torch.int, device=x.device)
             x = torch.index_select(x, dim=1, index=indices)
 
         return x
@@ -193,7 +193,7 @@ class TilePositionalEmbedding(nn.Module):
 
             # Drop all the padding we added earlier and keep only the tiles that
             # were actually present in the image.
-            indices = torch.arange(n_tiles_h*n_tiles_w)
+            indices = torch.arange(n_tiles_h*n_tiles_w, dtype=torch.int, device=x.device)
             x = torch.index_select(x, dim=1, index=indices)
 
         return x
