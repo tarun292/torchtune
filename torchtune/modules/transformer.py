@@ -340,7 +340,7 @@ class TransformerDecoder(nn.Module):
         self.num_heads = num_heads
         self.head_dim = head_dim
         self.causal_mask = None
-        self.pos = None
+        self.register_buffer("pos", torch.zeros(1, dtype=torch.int32))
         self.num_output_chunks = 0
 
     def set_num_output_chunks(self, num_output_chunks: int) -> None:
@@ -363,7 +363,7 @@ class TransformerDecoder(nn.Module):
         self.causal_mask = torch.tril(
             torch.ones(self.max_seq_len, self.max_seq_len, dtype=torch.bool)
         )
-        self.pos = 0
+        self.pos[0] = 0
 
     def caches_are_enabled(self) -> bool:
         """Check if the key value caches are setup."""
@@ -379,7 +379,7 @@ class TransformerDecoder(nn.Module):
         for layer in self.layers:
             layer.reset_cache()
 
-        self.pos = 0
+        self.pos[0] = 0
 
     def forward(
         self,
@@ -451,7 +451,7 @@ class TransformerDecoder(nn.Module):
             # Track the input position
             if input_pos is None:
                 input_pos = torch.arange(self.pos, self.pos + seq_len, device=h.device)
-            self.pos = input_pos.max() + 1
+            self.pos[0] = input_pos.max() + 1
             # shape: [1, input_pos_len, m_s]
             # in most cases input_pos_len should be 1
             mask = self.causal_mask[None, input_pos]
